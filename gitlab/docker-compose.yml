@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  gitlab_server:
+    container_name: dev_gitlab_server
+    hostname: gitlab.pupupan.com
+    image: gitlab/gitlab-ce:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "22:22"
+    # environment:
+    #   EXTERNAL_URL: ""
+    volumes:
+      - ./.data/server/config:/etc/gitlab
+      - ./.data/server/data:/var/opt/gitlab
+      - ./.data/server/logs:/var/log/gitlab
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://gitlab.pupupan.com"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      main:
+        aliases:
+          - gitlab_server
+  gitlab_runner:
+    container_name: dev_gitlab_runner
+    hostname: gitlab-runner.pupupan.com
+    image: gitlab/gitlab-runner:latest
+    restart: always
+    depends_on:
+      - gitlab_server
+    ports:
+      - "8093:8093"
+    volumes:
+      - ./.data/runner/config:/etc/gitlab-runner
+      - //var/run/docker.sock:/var/run/docker.sock
+    networks:
+      main:
+        aliases:
+          - gitlab_runner
+networks:
+  main:
+

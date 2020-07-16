@@ -1,4 +1,5 @@
-version: '2.4'
+version: '3.8'
+# version: '2.4'
 services:
   gitlab_server:
     container_name: dev_gitlab_server
@@ -17,7 +18,7 @@ services:
       - ./.data/server/logs:/var/log/gitlab
     healthcheck:
       test: ["CMD", "curl", "-f", "http://gitlab.pupupan.com"]
-      interval: 30s
+      interval: 1m30s
       timeout: 10s
       retries: 3
       start_period: 30s
@@ -31,8 +32,9 @@ services:
     image: gitlab/gitlab-runner:latest
     restart: always
     depends_on:
-      gitlab_server:
-        condition: service_healthy
+      - gitlab_server
+      # gitlab_server:
+      #   condition: service_healthy
     ports:
       - "8093:8093"
     volumes:

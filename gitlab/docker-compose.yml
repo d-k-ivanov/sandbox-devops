@@ -7,15 +7,33 @@ services:
     image: gitlab/gitlab-ce:latest
     restart: always
     ports:
+      - "22:22"
       - "80:80"
       - "443:443"
-      - "22:22"
-    # environment:
-    #   EXTERNAL_URL: ""
+      - "5033:5033"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.pupupan.com'
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = "smtp.office365.com"
+        gitlab_rails['smtp_port'] = 587
+        # gitlab_rails['smtp_user_name'] = "***************"
+        # gitlab_rails['smtp_password']  = "***************"
+        gitlab_rails['smtp_domain'] = "live.com"
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['smtp_tls'] = false
+        registry['enable'] = true
+        registry_external_url 'http://gitlab.pupupan.com'
+        registry_nginx['listen_port'] = 5033
+        registry_nginx['listen_https'] = false
+        # registry_nginx['proxy_set_headers'] = {"X-Forwarded-Proto" => "https","X-Forwarded-Ssl" => "on", "Host" => "gitlab.pupupan.com"}
+        registry_nginx['proxy_set_headers'] = {"X-Forwarded-Proto" => "http","Host" => "gitlab.pupupan.com"}
     volumes:
       - ./.data/server/config:/etc/gitlab
       - ./.data/server/data:/var/opt/gitlab
       - ./.data/server/logs:/var/log/gitlab
+      - //var/run/docker.sock:/var/run/docker.sock
     healthcheck:
       test: ["CMD", "curl", "-f", "http://gitlab.pupupan.com"]
       interval: 1m30s

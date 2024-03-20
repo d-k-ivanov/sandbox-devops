@@ -1,0 +1,44 @@
+[core]
+    attributesfile = .gitattributes
+    autocrlf = true
+    excludesfile = .gitignore
+    ignorecase = false
+    longpaths = true
+    pager = less -FXRS -x2
+    quotepath = false
+    safecrlf = false
+    sshCommand = ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+    untrackedCache = true
+
+[commit]
+    template = ~/.gitmessage
+
+[lfs]
+    activitytimeout = 60
+    concurrenttransfers = 8
+    dialtimeout = 60
+    keepalive = 10800
+    skipdownloaderrors = true
+    tlstimeout = 60
+
+[lfs "transfer"]
+    maxretries = 100
+    maxverifies = 100
+
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    process = git-lfs filter-process
+    required = true
+    smudge = git-lfs smudge -- %f
+
+[http]
+    sslverify = false
+
+[apply]
+    whitespace = nowarn
+
+[gc]
+    autoDetach = false
+
+; [credential]
+;     helper = manager

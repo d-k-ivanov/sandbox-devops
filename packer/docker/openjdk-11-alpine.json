@@ -1,0 +1,38 @@
+{
+	"builders":
+	[
+		{
+			"type": "docker",
+			"image": "alpine:edge",
+			"run_command": [ "-d", "-t", "-i", "{{.Image}}", "/bin/sh" ],
+			"commit": true
+		}
+	],
+	"provisioners":
+	[
+		{
+			"type": "shell",
+			"inline": [
+				"apk -U upgrade",
+				"apk --no-cache add ca-certificates wget",
+				"wget -q -O /tmp/jdk.tar.gz https://download.java.net/java/early_access/alpine/11/binaries/openjdk-11-ea+11_linux-x64-musl_bin.tar.gz",
+				"mkdir -p /usr/lib/jvm/java-11-openjdk",
+				"tar xzf /tmp/jdk.tar.gz -C /usr/lib/jvm/java-11-openjdk --strip-components 1",
+				"echo \"export JAVA_HOME=/usr/lib/jvm/java-11-openjdk\" > /etc/profile.d/java.sh",
+				"echo \"export PATH=${PATH}:/usr/lib/jvm/java-11-openjdk/bin\" >> /etc/profile.d/java.sh",
+				"echo '. /etc/profile' >> ~/.profile",
+				"apk del wget",
+				"rm -rf  /usr/lib/jvm/java-11-openjdk/lib/src.zip /root/.wget-hsts /tmp/* /var/cache/apk/*"
+			]
+		}
+	],
+	"post-processors": [
+		[
+			{
+				"type": "docker-tag",
+				"repository": "packer-openjdk",
+				"tag": "11-alpine"
+			}
+		]
+	]
+}

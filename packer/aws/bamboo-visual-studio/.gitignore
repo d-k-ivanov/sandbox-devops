@@ -1,0 +1,6 @@
+# Secrets:
+files/home/.ssh/id_rsa
+
+# Temporary
+tmp
+tmp.ps1

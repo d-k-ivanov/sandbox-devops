@@ -11,22 +11,41 @@
 
 # Bytecode
 *.class binary
-*.obj
 *.o
+*.obj
 *.pyd binary
 
 # Documents
 *.chm binary
 *.doc binary
+*.docm binary
 *.docx binary
+*.dot binary
+*.dotx binar
 *.hlp binary
 *.pdf binary
+*.pot binnary
+*.potm binary
+*.potx binary
+*.pps binnary
+*.ppsm binary
+*.ppsx binary
+*.ppt binnary
+*.pptm binary
+*.pptx binary
+*.xlm binary
+*.xls binary
+*.xlsm binary
+*.xlst binary
+*.xlsx binary
+*.xlt binary
+*.xltm binary
 
 # Images
 *.ai binary
 *.gif binary
-*.jpg binary
 *.ico binary
+*.jpg binary
 *.png binary
 *.psd binary
 

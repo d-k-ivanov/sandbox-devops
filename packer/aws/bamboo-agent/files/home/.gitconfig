@@ -1,0 +1,37 @@
+[core]
+    attributesfile = .gitattributes
+    editor = vim
+    excludesfile = .gitignore
+    ignorecase = false
+    pager = less -FXRS -x2
+    #pager = cat|more.com
+    sshCommand = ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+    untrackedCache = true
+    quotepath = false
+    autocrlf = true
+[commit]
+    template = ~/.gitmessage
+[lfs]
+    dialtimeout = 60
+    tlstimeout = 60
+    activitytimeout = 60
+    concurrenttransfers = 1
+    skipdownloaderrors = false
+[lfs "transfer"]
+    maxretries = 100
+    maxverifies = 100
+[filter "lfs"]
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+[apply]
+    whitespace = nowarn
+[gc]
+	autoDetach = false
+[credential]
+	helper = manager
+[gpg]
+	program = C:\\Program Files (x86)\\Gpg4win\\..\\GnuPG\\bin\\gpg.exe
+[lfs "customtransfer.bitbucket-media-api"]
+	path = C:\\tools\\GitLfsBitbucketAdapter\\git-lfs-bitbucket-media-api.exe

@@ -1,0 +1,14 @@
+# IDE
+.idea
+.vs
+.vscode
+
+# Python
+__pycache__
+venv
+
+# Ansible
+*.retry
+
+# Junk
+/tmp

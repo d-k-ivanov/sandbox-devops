@@ -1,0 +1,14 @@
+# IDE
+.idea
+.vs
+.vscode
+
+# Nuget packages
+*.nupkg
+
+# Python
+venv/
+__pycache__/
+
+# Temp
+tmp/

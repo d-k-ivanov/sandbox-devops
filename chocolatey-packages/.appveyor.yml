@@ -1,0 +1,39 @@
+# configuration for "master" branch
+-
+  branches:
+    only:
+      - master
+
+  version: 1.1.{build}
+
+  max_jobs: 1
+  image: Visual Studio 2019
+
+  artifacts:
+    - path: '*.nupkg'
+      name: ChocolateyPackages
+
+  build_script:
+    - ps: 'Get-CimInstance win32_operatingsystem -Property Caption, OSArchitecture, Version | fl Caption, OSArchitecture, Version'
+    - ps: $PSVersionTable
+    - git --version
+    - choco --version
+    - ps: |
+        "Build info"
+        '  {0,-20} {1}' -f 'SCHEDULED BUILD:', ($Env:APPVEYOR_SCHEDULED_BUILD -eq 'true')
+        '  {0,-20} {1}' -f 'FORCED BUILD:'   , ($Env:APPVEYOR_FORCED_BUILD    -eq 'true')
+        '  {0,-20} {1}' -f 'RE BUILD:'       , ($Env:APPVEYOR_RE_BUILD        -eq 'true')
+    - ps: .\build_all.ps1
+
+  deploy:
+    release: chocolatey-packages-v$(appveyor_build_version)
+    description: 'Chocolatey Packages'
+    provider: GitHub
+    auth_token:
+      secure: rh81skp99FQ8ioOSJe8p72iwt3TTfWQ02Z5eahKDyCTC4Q6WcOLcSV+lkiBRIqJX
+    artifact: /.*\.nupkg/
+    draft: false
+    prerelease: false
+    on:
+      branch: master
+      appveyor_repo_tag: false

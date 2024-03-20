@@ -1,0 +1,18 @@
+VERIFICATION
+
+Verification is intended to assist the Chocolatey moderators and community
+in verifying that this package's contents are trustworthy.
+
+Package can be verified like this:
+
+1. download the installer
+    - https://mran.blob.core.windows.net/install/mro/4.0.2/Windows/microsoft-r-open-4.0.2.exe
+
+2. You can use one of the following methods to obtain the SHA256 checksum:
+    - Use powershell function 'Get-FileHash'
+    - Use Chocolatey utility 'checksum.exe'
+
+    checksum: EB4F0DDB009A5CF63A85024599238802E0F4E509BE3A065A3EAED9D185DE66B7
+
+File 'LICENSE.txt' is obtained from:
+    https://raw.githubusercontent.com/microsoft/microsoft-r-open/master/source/COPYING

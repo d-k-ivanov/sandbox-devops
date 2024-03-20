@@ -1,0 +1,62 @@
+---
+- name: Remove old docker packages
+  apt: name={{ item }} state=absent
+  loop:
+    - docker
+    - docker-engine
+    - docker.io
+
+- name: Update apt cache
+  apt: update_cache=yes
+  changed_when: False
+
+- name: Install dependent packages
+  apt: name={{ item }} state=present
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+
+- name: Add docker repository key
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: present
+
+- name: Add docker repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} {{ docker_channel }}"
+    state: present
+
+- name: Install packages
+  apt: name={{ item }} state=present
+  loop:
+    - docker-ce
+    - docker-compose
+
+- name: Add the Docker administrator to the Docker group
+  user: name="{{ users.name }}" groups=docker append=true
+
+- lineinfile:
+    path: "/home/{{ users.name }}/.localenv"
+    line: 'export DOCKER_HOST=tcp://0.0.0.0:2375'
+
+- file:
+    path: "/{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "c"
+    - "d"
+
+- lineinfile:
+    path: "/etc/fstab"
+    line: '/mnt/{{ item }}   /{{ item }}  none   bind   0 0'
+  loop:
+    - "c"
+    - "d"
+
+- shell: "mount -a"
+
+
+

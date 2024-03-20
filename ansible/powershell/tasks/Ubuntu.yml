@@ -1,0 +1,17 @@
+---
+- name: Add the Microsoft apt signing key
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc 
+    state: present
+
+- name: Add Microsoft apt repository
+  apt_repository: 
+    repo: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main" 
+    state: present 
+    filename: 'microsoft'
+
+- name: Update repositories cache and install PowerShell package
+  apt:
+    name: powershell
+    update_cache: yes
+    

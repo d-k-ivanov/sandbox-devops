@@ -1,0 +1,6 @@
+---
+- apt_key: id=2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5 keyserver=keyserver.ubuntu.com state=present
+- apt_repository: repo="deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" state=present filename='mongodb-org-3.6'
+
+- apt_key: url="https://packages.cloud.google.com/apt/doc/apt-key.gpg" state=present
+- apt_repository: repo="deb http://apt.kubernetes.io/ kubernetes-xenial main" state=present filename='kubernetes'

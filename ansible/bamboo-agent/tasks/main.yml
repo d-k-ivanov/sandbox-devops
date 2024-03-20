@@ -1,0 +1,37 @@
+---
+- name: Creating Bamboo user
+  user:
+    name: bamboo
+    system: yes
+    createhome: no
+    uid: "{{ bamboo.user }}"
+
+- name: Creating Bamboo group
+  group:
+    name: bamboo
+    system: yes
+    gid: "{{ bamboo.group }}" 
+
+- name: Creating Bamboo data directory
+  file:
+    path: "{{ paths.datadir }}/{{ item }}"
+    state: directory
+    owner: bamboo
+    group: bamboo
+  with_items:
+    - "bamboo/home"
+
+- name: Deploy Bamboo Agent container
+  docker_container:
+    name: "bamboo-agent"
+    image: "keepbot/bamboo-agent:0.1.0"
+    pull: no
+    restart_policy: always
+    state: started
+    recreate: yes
+    network_mode: bridge
+    command: "{{ bamboo.server_url }}"
+    volumes:
+      - "/etc/passwd:/etc/passwd:ro"
+      - "/etc/group:/etc/group:ro"
+      - "{{ paths.datadir }}/bamboo/home:/home/bamboo/bamboo-agent-home"

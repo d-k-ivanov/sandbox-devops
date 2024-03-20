@@ -1,0 +1,86 @@
+---
+- name: Oracle database preinstall
+  yum: name={{ item }} state=present
+  with_items:
+    - "oracle-rdbms-server-12cR1-preinstall"
+    - "xorg-x11-utils"
+    - "xorg-x11-apps"
+  become: true
+
+- selinux: 
+    state: disabled
+  become: true
+
+- name: '[Oracle] Disable firewall'
+  service:
+    name: "firewalld"
+    state: "stopped"
+    enabled: "no"
+  become: true
+
+- name: Oracle directory
+  file: path=/u01/app/oracle/product/12.1.0.2/dbhome_1 state=directory
+  become: true
+
+- name: Oracle directory rights
+  file: path=/u01 owner=oracle group=oinstall recurse=yes mode=0775
+  become: true
+
+- name: Setting environment variables
+  lineinfile: dest=/home/oracle/.bash_profile state=present line={{ item}}
+  with_items: 
+  - "# Oracle Settings"
+  - "export TMP=/tmp"
+  - "export TMPDIR=$TMP"
+  - "export ORACLE_HOSTNAME={{ ansible_fqdn }}"
+  - "export ORACLE_UNQNAME=DEVORA"
+  - "export ORACLE_BASE=/u01/app/oracle"
+  - "export ORACLE_HOME=$ORACLE_BASE/product/12.1.0/dbhome_1"
+  - "export ORACLE_SID=DEVORA"
+  - "export PATH=/usr/sbin:$PATH"
+  - "export PATH=$ORACLE_HOME/bin:$PATH"
+  - "export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib"
+  - "export CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib"
+  become: true
+
+- name: Oracle systemd environment
+  copy: src=devora.oracledb dest=/etc/sysconfig/devora.oracledb
+  tags: ["systemd"]
+  become: true
+
+- name: Oracle listener service
+  copy: src=devora@lsnrctl.service dest=/usr/lib/systemd/system/devora@lsnrctl.service
+  tags: ["systemd"]
+  become: true
+  # notify:
+  #   - reload systemd
+
+- name: Oracle database service
+  copy: src=devora@oracledb.service dest=/usr/lib/systemd/system/devora@oracledb.service
+  tags: ["systemd"]
+  become: true
+  # notify:
+  #   - reload systemd
+
+- name: Enable listener service
+  systemd: name=devora@lsnrctl.service enabled=yes daemon_reload=yes
+  become: true
+
+- name: Enable database service
+  systemd: name=devora@oracledb.service enabled=yes daemon_reload=yes
+  become: true
+
+# echo "DEVORA:/u01/app/oracle/product/12.1.0/dbhome_1:Y" > /etc/oratab
+
+# Upload nad unzip ---
+# - unarchive:
+#     src: /home/oracle/linuxamd64_12102_database_se2_1of2.zip
+#     dest: /home/oracle/oracle_setup_files
+#   become: true
+#   become_user: oracle
+
+# - unarchive:
+#     src: /home/oracle/linuxamd64_12102_database_se2_2of2.zip
+#     dest: /home/oracle/oracle_setup_files
+#   become: true
+#   become_user: oracle

@@ -1,0 +1,42 @@
+---
+- name: Ensure that target directory exists
+  file: path={{ item }} state=directory mode=0755
+  with_items:
+    - "/etc/X11/xorg.conf.d"
+    - "/etc/udev/rules.d"
+    - "/usr/local/bin/"
+
+- name: Copy touchpad description to xorg.conf.d
+  copy:
+    src: "files/{{item}}"
+    dest: "/etc/X11/xorg.conf.d/{{item}}"
+    owner: "{{root_user}}"
+    group: "{{root_group}}"
+    mode: '0644'
+  with_items:
+    - 70-synaptics.conf
+  
+- name: Disable touchpad when mouse existed
+  template: src=01-touchpad.rules.j2 dest=/etc/udev/rules.d/01-touchpad.rules
+  
+- name: Copy lid rules to udev folder
+  copy:
+    src: "files/{{item}}"
+    dest: "/etc/udev/rules.d/{{item}}"
+    owner: "{{root_user}}"
+    group: "{{root_group}}"
+    mode: '0644'
+  with_items:
+    - 02-lid.rules
+  when: lid_action == "yes"
+  
+- name: Copy lid action script to bin folder
+  copy:
+    src: "files/{{item}}"
+    dest: "/usr/local/bin/{{item}}"
+    owner: "{{root_user}}"
+    group: "{{root_group}}"
+    mode: '0755'
+  with_items:
+    - lid_action.sh
+  when: lid_action == "yes"

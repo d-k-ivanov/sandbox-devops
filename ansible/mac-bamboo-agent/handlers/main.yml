@@ -1,0 +1,12 @@
+---
+# alias start-bamboo-agent="launchctl start com.atlassian.bamboo-agent"
+- name: start-bamboo-agent
+  command: "launchctl start com.atlassian.bamboo-agent"
+
+# alias stop-bamboo-agent="launchctl stop com.atlassian.bamboo-agent"
+- name: start-bamboo-agent
+  command: "launchctl stop com.atlassian.bamboo-agent"
+
+# alias restart-bamboo-agent="stop-bamboo-agent & start-bamboo-agent"
+- name: restart-bamboo-agent
+  command: "launchctl stop com.atlassian.bamboo-agent & launchctl start com.atlassian.bamboo-agent"

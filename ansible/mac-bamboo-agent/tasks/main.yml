@@ -1,0 +1,148 @@
+---
+- name: Set ownership variables
+  set_fact:
+    bamboo_user: '{{ bamboo_user | default(ansible_user_id) }}'
+    bamboo_group: '{{ bamboo_group | default(ansible_user_gid) }}'
+
+- name: Set path variables
+  set_fact:
+    bamboo_user_home: '/Users/{{ bamboo_user }}'
+    bamboo_home_path: '/Users/{{ bamboo_user }}/{{ bamboo.agent.paths.home }}'
+    bamboo_install_path: '/Users/{{ bamboo_user }}/{{ bamboo.agent.paths.install }}'
+    java_home: '{{ bamboo.agent.paths.java }}'
+
+- name: Print current ownership variables
+  debug:
+    msg:
+    - "Username:          {{ bamboo_user }}"
+    - "Group:             {{ bamboo_group }}"
+    - "Bamboo user home:  {{ bamboo_user_home }}"
+    - "Bamboo home:       {{ bamboo_home_path }}"
+    - "Bamboo install:    {{ bamboo_install_path }}"
+    - "JAVA home:         {{ java_home }}"
+
+- name: Ensure Bamboo Home directory exists.
+  file:
+    path: "{{ item }}"
+    owner: "{{ bamboo_user }}"
+    group: "{{ bamboo_group }}"
+    state: directory
+    mode: 0775
+  become: yes
+  with_items:
+    - "{{ bamboo_install_path }}"
+    - "{{ bamboo_home_path }}"
+    - "{{ bamboo_home_path }}/conf"
+    - "{{ bamboo_home_path }}/bin"
+    - "{{ bamboo_home_path }}/logs"
+
+- name: Upload Bamboo agent installer
+  copy:
+    src: "atlassian-bamboo-agent-installer-{{ bamboo.agent.version }}.jar"
+    dest: "{{ bamboo_install_path }}/atlassian-bamboo-agent-installer-{{ bamboo.agent.version }}.jar"
+    mode: 0774
+    owner: "{{ bamboo_user }}"
+    group: "{{ bamboo_group }}"
+
+- name: Create .ssh folder
+  file:
+    name: "{{ bamboo_user_home }}/.ssh/"
+    mode: 0700
+    owner: "{{ bamboo_user }}"
+    group: "{{ bamboo_group }}"
+    state: directory
+
+- name: Add SSH private key
+  template:
+    src: id_rsa.j2
+    dest: "{{ bamboo_user_home }}/.ssh/id_rsa"
+    mode: 0600
+    owner: "{{ bamboo_user }}"
+    group: "{{ bamboo_group }}"
+
+- name: Add SSH client config file
+  copy:
+    src: ssh_config
+    dest: "{{ bamboo_user_home }}/.ssh/config"
+    mode: 0600
+    owner: "{{ bamboo_user }}"
+    group: "{{ bamboo_group }}"
+
+- name: Check if Bamboo agent already installed
+  stat:
+    path: "{{ bamboo_home_path }}/bin/bamboo-agent.sh"
+  register: bamboo_check_result
+
+- name: Installing bamboo agent
+  command: "java -Dbamboo.home={{ bamboo_home_path }} -jar {{ bamboo_install_path }}/atlassian-bamboo-agent-installer-{{ bamboo.agent.version }}.jar {{ bamboo.agent.server_url }} install"
+  when: bamboo_check_result.stat.exists == False
+  register: install_step
+
+- name: Add Bamboo capabilities properties
+  template:
+    src: bamboo-capabilities.properties.j2
+    dest: "{{ bamboo_home_path }}/bin/bamboo-capabilities.properties"
+    owner: "{{ bamboo_user }}"
+    group: "{{ bamboo_group }}"
+  register: capabilities_step
+
+- name: Add Bamboo agent startup script
+  template:
+    src: start-bamboo-agent.sh.j2
+    dest: "{{ bamboo_user_home }}/start-bamboo-agent.sh"
+    mode: 0775
+    owner: "{{ bamboo_user }}"
+    group: "{{ bamboo_group }}"
+  register: startup_step
+
+- name: Add Bamboo agent service to the system
+  template:
+    src: com.atlassian.bamboo-agent.plist.j2
+    dest: "/Library/LaunchDaemons/com.atlassian.bamboo-agent.plist"
+    owner: "root"
+    group: "wheel"
+  become: yes
+  register: service_step
+
+- name: Load Bamboo agent service
+  shell: "launchctl unload /Library/LaunchDaemons/com.atlassian.bamboo-agent.plist && launchctl load /Library/LaunchDaemons/com.atlassian.bamboo-agent.plist"
+  when: (install_step.changed or capabilities_step.changed or startup_step.changed or service_step.changed or bamboo.agent.restart)
+
+- name: Check if Bamboo agent running
+  shell: ps -ef | grep com.atlassian.bamboo.agent | grep -v grep | wc -l | tr -s ' '
+  register: bamboo_is_running
+  when: (install_step.changed or capabilities_step.changed or startup_step.changed or service_step.changed or bamboo.agent.restart)
+
+# - name: Show bamboo_is_running variable
+#   debug:
+#     msg:
+#     - "{{ bamboo_is_running }}"
+#   when: bamboo_is_running.changed
+
+- name: stop-bamboo-agent
+  shell: "launchctl stop com.atlassian.bamboo-agent"
+  become: yes
+  register: bamboo_is_stopping
+  when: bamboo_is_running.changed and bamboo_is_running.stdout != ' 0'
+
+- pause:
+    seconds: 30
+  when: bamboo_is_stopping.changed
+
+# - name: start-bamboo-agent
+#   shell: "launchctl start com.atlassian.bamboo-agent"
+#   when: bamboo_is_running.changed
+
+- name: Setup daily job for cleaning build directory
+  cron:
+    name: "bamboo-agent-build-dir-cleanup"
+    minute: "00"
+    hour: "23"
+    job: '"find {{ bamboo_home_path }}/xml-data/build-dir/ ! -path *repositoryData -type d -depth 1 -mtime +2 -exec rm -rf {} \;"'
+    # state: absent
+
+# - name: Add Bamboo agent service to the system
+#   file:
+#     path: "/Library/LaunchDaemons/com.atlassian.bamboo-agent.plist"
+#     state: absent
+#   become: yes

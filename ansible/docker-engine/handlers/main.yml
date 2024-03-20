@@ -1,0 +1,7 @@
+---
+#- name: refresh_groups
+#  shell: "sleep 1; pkill -u {{ ansible_user }} sshd"
+#  async: 3
+#  poll: 2
+#  failed_when: False
+#  when: ansible_user is defined and ansible_user in docker_admin_users

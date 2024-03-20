@@ -1,0 +1,10 @@
+---
+- name: Users
+  include: users.yml
+  become: yes
+
+- name: Environment
+  include: environment.yml
+
+- name: XCode
+  include: xcode.yml

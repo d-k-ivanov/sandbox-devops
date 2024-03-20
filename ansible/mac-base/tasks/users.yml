@@ -1,0 +1,13 @@
+---
+- name: Authorized key
+  authorized_key:
+    user: macuser
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDHXj/dlVEc1KbBomA2FMNt9JxfBLOJjRmuNXA9slOREOmxkNMt2mXXhlkgvzRAvtdlInZz1wBnnqumFBcVNseF96WFdGzBMXNHt0BdndEo5bdzp20922Wa8nw5f8gis+jQEkdNBTX7nT7s4spJZ6AoB518c/ylbyomf4Zr0YjeajxQz5SrpjqS+KoSgNwdnOSQSOcD9PeX6cBW7gcZE1mPD1yl1OSYS06bMV0c01dtyS32Ub59Q/3M9rEuCdjERZb01BzfLG8eLVIY1yvN3eldfQGbt8gRRpXUjd8HeqTjl5Yr/0ZjrFrIxUiUHHiPHmeoKMDTAOB0BfOJckUoSvafmo1rEx4xqtFA2JDVS2TBZRTZZ8Gx8mzF3sxoQ5vvGj0uqmT0vBG4+2Fj7smO7J21RwD7dT9idUm/fPlrIsrJsJiVryFfLYwCPLbq5C0QiSNLLtyKFUzXFt0davzWfVb9mi6De5B4sBIKT8mvibdnzABj3iETFXZK3tOw84SO+HbB7iUK4UCT5EnxQYcydaOKyLr+8Lvzp0HoFClJu9YZp6U5GvzDAW1+eF0oh41Q4q8Zt2rEMt/pIszjog5TPTsofKGVsKdvNYHvueKhwqzTQ7mgPdhpXYFaXOumGe7b5WSNb1MXi/1YY03RU9RDA6b+vrfpJBZRE7w74Nikx+sTbw=="
+
+- name: Passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%admin'
+    line: '%admin ALL=(ALL:ALL) NOPASSWD:ALL'
+    validate: 'visudo -cf %s'

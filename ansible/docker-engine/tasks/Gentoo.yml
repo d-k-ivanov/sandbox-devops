@@ -1,0 +1,23 @@
+---
+  - name: Install docker
+    package:
+      package: "{{ item }}"
+      newuse: "yes"
+      update: "yes"
+    with_items:
+      - "app-emulation/docker"
+    tags: ["packages"]
+
+  - name: Docker service
+    service: 
+      name: "{{ item }}"
+      enabled: "yes"
+      state: "started"
+    with_items:
+      - docker
+    tags: ["services"]
+
+  - name: Add users to docker group
+    user: append="yes" name={{ item }} groups="docker"
+    with_items: "{{ docker_users }}"
+

@@ -1,0 +1,12 @@
+---
+- name: Clone environment repository
+  git:
+    repo: 'https://github.com/d-k-ivanov/dotfiles.git'
+    dest: '~/dotfiles'
+    recursive: yes
+    update: yes
+  register: environment_clone
+
+- name: Install environment
+  shell: '~/dotfiles/install.sh prod'
+  when: environment_clone.changed

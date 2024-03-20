@@ -1,0 +1,4 @@
+---
+xcode:
+  clt_path: /Library/Developer/CommandLineTools
+  force_install: no

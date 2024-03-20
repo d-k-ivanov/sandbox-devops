@@ -1,0 +1,12 @@
+# Speed up build times for repeated builds
+- name: Enable ccache for makepkg
+  replace:
+    dest: /etc/makepkg.conf
+    regexp: '^\#?BUILDENV=\(([a-z\!\s]+)\s\!?ccache\b'
+    replace: 'BUILDENV=(\1 ccache'
+    validate: grep -P '^BUILDENV=\([a-z\ \!]+\ ccache' %s
+    owner: "{{root_user}}"
+    group: "{{root_group}}"
+    mode: '0644'
+    backup: yes
+

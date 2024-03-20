@@ -1,0 +1,8 @@
+---
+- copy: src=99-docker-cleanup.cron.daily dest=/etc/cron.daily/99-docker-cleanup mode=0755
+
+# ------------------ Slack Notification
+- slack: token={{ secrets.slack.token }} color="good" msg="Deployment of *docker garbage collector* on \"*{{ inventory_hostname }}*\" node finished"
+  become: no
+  delegate_to: localhost
+  when: slack_mute is undefined

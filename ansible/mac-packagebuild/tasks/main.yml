@@ -1,0 +1,58 @@
+---
+- name: Set ownership variables
+  set_fact:
+    packagebuild_user: '{{ packagebuild_user | default(ansible_user_id) }}'
+    packagebuild_group: '{{ packagebuild_group | default(ansible_user_gid) }}'
+
+- name: Set path variables
+  set_fact:
+    packagebuild_user_home: '/Users/{{ packagebuild_user }}'
+    packagebuild_path: '/Users/{{ packagebuild_user }}/thirdparty'
+
+- name: Print current ownership variables
+  debug:
+    msg:
+    - "PackageBuild Username:   {{ packagebuild_user }}"
+    - "PackageBuild Group:      {{ packagebuild_group }}"
+    - "PackageBuild User Home:  {{ packagebuild_user_home }}"
+    - "PackageBuild Home:       {{ packagebuild_path }}"
+
+- name: Check if Packagebuid exist
+  stat:
+    path: "/usr/local/bin/packagesbuild"
+  register: packagesbuild_exist
+
+- name: Check local Packages DMG file
+  local_action:
+    module: stat
+    path: "{{ role_path }}/files/Packages.dmg"
+    checksum_algorithm: sha256
+  register: packagesbuild_dmg_local
+
+- name: Check remote Packages DMG file
+  stat:
+    path: "{{ packagebuild_user_home }}/Downloads/Packages.dmg"
+    checksum_algorithm: sha256
+  register: packagesbuild_dmg_remote
+
+- name: Add Packages.dmg to Downloads folder
+  copy:
+    src: Packages.dmg
+    dest: "{{ packagebuild_user_home }}/Downloads/Packages.dmg"
+    owner: "{{ packagebuild_user }}"
+  register: uploaded
+  when: packagesbuild_dmg_local.stat.checksum == packagesbuild_dmg_remote.stat.checksum
+
+- name: Mounting Packages.dmg
+  command: "hdiutil attach {{ packagebuild_user_home }}/Downloads/Packages.dmg -nobrowse -mountpoint /tmp/Packages"
+  register: package_mount
+  when: packagesbuild_exist.stat.exists == False or packagebuild.reinstall or uploaded.changed
+
+- name: Install PackageBuild
+  command: "installer -package /tmp/Packages/packages/Packages.pkg -target /"
+  become: yes
+  when: package_mount.changed
+
+- name: Unmounting Packages.dmg
+  command: "hdiutil detach /tmp/Packages"
+  when: package_mount.changed

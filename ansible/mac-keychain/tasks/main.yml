@@ -1,0 +1,94 @@
+---
+- name: Set ownership variables
+  set_fact:
+    keychain_user: '{{ keychain_user | default(ansible_user_id) }}'
+    keychain_group: '{{ keychain_group | default(ansible_user_gid) }}'
+
+- name: Set path variables
+  set_fact:
+    keychain_user_home: '/Users/{{ keychain_user }}'
+    keychain_path: '/Users/{{ keychain_user }}/keychain'
+
+- name: Ensure keychain directory exists.
+  file:
+    path: "{{ keychain_path }}"
+    owner: "{{ keychain_user }}"
+    group: "{{ keychain_group }}"
+    state: directory
+
+- name: Add certificates and keys to keychain dir
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ keychain_path }}/{{ item }}"
+    mode: 0600
+    owner: "{{ keychain_user }}"
+    group: "{{ keychain_group }}"
+  register: cert_template
+  with_items:
+    - "apple_developer_application.crt"
+    - "apple_developer_application.key"
+    - "apple_developer_installer.crt"
+    - "apple_developer_installer.key"
+
+- name: Remove PKCS#12 files
+  file:
+    path: "{{ keychain_path }}/{{ item }}.p12"
+    state: absent
+  with_items:
+    - "apple_developer_application"
+    - "apple_developer_installer"
+  when: cert_template.changed or keychain.force_pcs12
+
+- name: Check if apple_developer_application.p12 exist
+  stat:
+    path: "{{ keychain_path }}/apple_developer_application.p12"
+  register: pcs12_existance_app
+
+- name: Check if apple_developer_installer.p12 exist
+  stat:
+    path: "{{ keychain_path }}/apple_developer_installer.p12"
+  register: pcs12_existance_inst
+
+- name: Generate apple_developer_application files
+  openssl_pkcs12:
+    action: export
+    path: "{{ keychain_path }}/apple_developer_application.p12"
+    friendly_name: "apple_developer_application"
+    privatekey_path: "{{ keychain_path }}/apple_developer_application.key"
+    certificate_path: "{{ keychain_path }}/apple_developer_application.crt"
+    state: present
+    mode: '0600'
+    force: yes
+  when: pcs12_existance_app.stat.exists == False
+
+- name: Generate PKCS#12 files
+  openssl_pkcs12:
+    action: export
+    path: "{{ keychain_path }}/apple_developer_installer.p12"
+    friendly_name: "apple_developer_installer"
+    privatekey_path: "{{ keychain_path }}/apple_developer_installer.key"
+    certificate_path: "{{ keychain_path }}/apple_developer_installer.crt"
+    state: present
+    mode: '0600'
+    force: yes
+  when: pcs12_existance_inst.stat.exists == False
+
+- name: Check if apple_developer_application.p12  was created
+  stat:
+    path: "{{ keychain_path }}/apple_developer_application.p12"
+  register: pcs12_created_app
+
+- name: Check if apple_developer_installer.p12 was created
+  stat:
+    path: "{{ keychain_path }}/apple_developer_installer.p12"
+  register: pcs12_created_inst
+
+# - name: Add trusted apple_developer_application.p12
+#   shell: "security unlock-keychain -p 0000 && security import {{ keychain_path }}/apple_developer_application.p12 -T /usr/bin/codesign -T /usr/bin/productsign"
+#   when: pcs12_created_app.stat.exists == True
+
+# - name: Add trusted apple_developer_installer.p12
+#   shell: "security unlock-keychain -p 0000 && security import {{ keychain_path }}/apple_developer_installer.p12 -T /usr/bin/codesign  -T /usr/bin/productsign"
+#   when: pcs12_created_inst.stat.exists == True
+
+

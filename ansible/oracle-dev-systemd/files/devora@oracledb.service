@@ -1,0 +1,13 @@
+[Unit]
+Description=oracle net listener
+After=network.target lsnrctl.service
+
+[Service]
+Type=forking
+EnvironmentFile=/etc/sysconfig/devora.oracledb
+ExecStart=/u01/app/oracle/product/12.1.0/dbhome_1/bin/dbstart /u01/app/oracle/product/12.1.0/dbhome_1
+ExecStop=/u01/app/oracle/product/12.1.0/dbhome_1/bin/dbshut /u01/app/oracle/product/12.1.0/dbhome_1
+User=oracle
+
+[Install]
+WantedBy=multi-user.target

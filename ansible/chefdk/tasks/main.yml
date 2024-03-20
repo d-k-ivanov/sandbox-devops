@@ -1,0 +1,28 @@
+---
+- name: Include OS-specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
+
+- name: Download chefdk
+  get_url: url="{{ chefdk_url_deb }}" dest={{ chefdk_tmp }}
+  async: 10000
+  poll: 10
+  register: download
+  ignore_errors: yes
+  become: true
+
+- name: creating {{ chefdk_tmp }}
+  file: path={{ chefdk_tmp }} state=directory
+  when: download is failed
+
+- name: Downloading using wget
+  command: chdir={{ chefdk_tmp }} wget {{ chefdk_url_deb }}
+  async: 10000000
+  poll: 5
+  when: download is failed
+
+- name: Install chefdK
+  apt: deb={{ chefdk_tmp_dir }}
+  become: true
+
+- name: Install knife-block
+  shell: "chef gem install knife-block"

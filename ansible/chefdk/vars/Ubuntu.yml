@@ -1,0 +1,3 @@
+---
+chefdk_deb : chefdk_{{ chefdk_version }}-1_amd64.deb
+chefdk_url_deb : https://packages.chef.io/files/stable/chefdk/{{ chefdk_version }}/ubuntu/16.04/{{ chefdk_deb }}

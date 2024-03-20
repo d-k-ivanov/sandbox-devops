@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+export EDITOR=vim
+export HOME={{ bamboo_user_home }}
+export JAVA_HOME={{ java_home }}
+export LANG=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export PATH="/usr/local/bin:/usr/local/opt/python3/bin:/usr/local/opt/python2/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export SHELL=/bin/bash
+export TERM=xterm-256color
+export USER={{ bamboo_user }}
+export LOGNAME={{ bamboo_user }}
+export XZ_OPT=--threads=0
+
+{{ bamboo_user_home }}/bamboo-agent-home/bin/bamboo-agent.sh console

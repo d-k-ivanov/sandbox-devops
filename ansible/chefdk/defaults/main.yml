@@ -1,0 +1,4 @@
+---
+chefdk_version: "2.5.3"
+chefdk_tmp: "/tmp/"
+chefdk_tmp_dir: "{{ chefdk_tmp}}{{ chefdk_deb }}"

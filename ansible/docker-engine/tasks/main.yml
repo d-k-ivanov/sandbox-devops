@@ -1,0 +1,9 @@
+---
+- name: Install Docker Engine on {{ ansible_distribution }}
+  include_tasks: "{{ ansible_os_family }}.yml"
+
+# ------------------ Slack Notification
+- slack: token={{ secrets.slack.token }} color="good" msg="Deployment of *docker engine* on \"*{{ inventory_hostname }}*\" node is finished"
+  become: no
+  delegate_to: localhost
+  when: not slack_mute

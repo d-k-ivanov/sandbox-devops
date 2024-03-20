@@ -1,0 +1,8 @@
+---
+- name: Add repositories
+  import_tasks: apt-repos.yml
+
+- name: Install software
+  import_tasks: soft.yml
+
+

@@ -1,0 +1,5 @@
+[bugtraq "jira"]
+ projects = PRJA, PRJB, PRJC, PRJD
+ url = https://org_name.atlassian.net/browse/%PROJECT%-%BUGID%
+ loglinkregex = %PROJECT%-\\d+
+ logregex = \\d+ 
